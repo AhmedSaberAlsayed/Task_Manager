@@ -5,6 +5,7 @@ namespace App\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Auth;
 
 class UserPolicy
 {
@@ -19,19 +20,17 @@ class UserPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, User $targetUser)
+    public function view(User $user, )
     {
         if ($user->isAdmin()) {
             return true;
         } elseif ($user->isTeamLeader()) {
-            return $user->id === $targetUser->leader_id;
-        } elseif ($user->isEmployee() && $user->id === $targetUser->id) {
+            return true;
+        } elseif ($user->isEmployee() ) {
             return true;
         }
         return false;
     }
-    
-
     /**
      * Determine whether the user can create models.
      */
@@ -49,32 +48,29 @@ class UserPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, User $targetUser)
-    {
+    public function update(User $user,$updaterequest)
+    {        
+        $TargetUser = User::where("id",$updaterequest->id)->first();
         if ($user->isAdmin()) {
             return true;
-        } elseif ($user->isTeamLeader()) {
-            return $user->id === $targetUser->leader_id
-                && !$targetUser->isTeamLeader();
+        } elseif ($user->isTeamLeader() && $TargetUser->leader_id == $user->id) {
+            return true;
         }
         return false;
     }
-    
-
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, User $targetUser)
-    {
+    public function delete(User $user,$request)
+    { $TargetUser = User::where("id",$request->id)->first();
+
         if ($user->isAdmin()) {
             return true;
-        } elseif ($user->isTeamLeader() && $user->id === $targetUser->leader_id) {
+        } elseif ($user->isTeamLeader() && $TargetUser->leader_id == $user->id) {
             return true;
         }
         return false;
     }
-    
-
     /**
      * Determine whether the user can restore the model.
      */

@@ -64,32 +64,46 @@ class AuthController extends Controller
         // ====== Update User Account =====================
 public function update(Updaterequest $updaterequest) 
 {
-    $this->authorize('update', User::class);
+    $this->authorize('update',[ User::class, $updaterequest, Auth::class]);
     $user=User::where('id',$updaterequest->id)->first();
         $user->update([
             "name"=> $updaterequest->name,
             "email"=> $updaterequest->email,
             "password"=> bcrypt($updaterequest->password),
             "img_path"=> $updaterequest->img_path,
-            // "role"=> $updaterequest->role,
-            // "leader_id"=> $updaterequest->leader_id
         ]);
+
+            if(Auth::user()->isAdmin())
+            {
+                $user->update([
+                "role"=> $updaterequest->role,
+                "leader_id"=> $updaterequest->leader_id
+        ]);
+            };
+        
         return $this->api_design(200,'user update successfully', [$user,],null);
     }
         // ====== delete User Account =====================
 
 public function delete(Request $request){
-    $this->authorize('delete', User::class);
+    $this->authorize('delete',[ User::class, $request]);
     $user=User::where('id',$request->id)->first();
 
     $user->delete();
     return $this->api_design(200,'user delete successfully',$user,null);
             // ====== index User Account =====================
 }
+// !$targetUser->isTeamLeader()
 public function index()
 {
-    $this->authorize('', User::class);
-    $user=User::get()->all();
+    // $this->authorize('view',[ User::class]);
+    if(Auth::user()->isAdmin()){
+        $user=User::get()->all();
         return $this->api_design(200,'All users',$user,null);
+    }elseif(Auth::user()->isTeamLeader()){
+        $user=User::where('leader_id',Auth::user()->id)->get();
+        return $this->api_design(200,'my users',$user,null);
+    }
+    return false;
 }
 }

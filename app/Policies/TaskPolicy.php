@@ -25,31 +25,47 @@ class TaskPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function createTask(User $user)
+    public function createTask(User $user,$createReaquest)
     {
-        if ($user->isAdmin() || $user->isTeamLeader()) {
+        $Targettask = User::where("id", $createReaquest->user_id)->get()->first();
+        // dd( $Targettask);
+        if ($user->isAdmin()) {
+            return true;
+        }
+        elseif ( $user->isTeamLeader() && $user->id === $Targettask->leader_id ) {
             return true;
         }
         return false;
     }
-    
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, task $task ): bool
+    public function update(User $user, $updateReaquest ): bool
     {
-        return $user->isAdmin() || ($user->isTeamLeader() && $user->id === $task->user_id->leader_id);
-
+         $TargetTask = task::where("id",$updateReaquest->id)->first();
+         if ($user->isAdmin()) {
+            return true;
+         }
+         elseif ( $user->isTeamLeader() &&$TargetTask->leader_id == $user->id){
+            return true;
+         }
+        
+        return false;
     }
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, task $task): bool
+    public function delete(User $user,$request): bool
     {
-        return $user->isAdmin() || ($user->isTeamLeader() && $user->id === $task->user_id->leader_id);
-
-    }
+        $TargetTask = task::where("id",$request->id)->first();
+        if ($user->isAdmin()) {
+           return true;
+        }elseif ( $user->isTeamLeader() &&$TargetTask->leader_id == $user->id){
+           return true;
+        }
+       
+       return false;    }
     public function updateStatus(User $user, Task $task)
 {
     if ($user->isAdmin()) {

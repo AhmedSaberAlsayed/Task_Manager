@@ -21,10 +21,10 @@ class TaskController extends Controller
     // }
             // ====== create task   =====================
 
-   public function create(createReaquest $createReaquest)
+   public function create(createReaquest $createReaquest )
    {
-    $this->authorize("createTask", Task::class);
-    
+    $auth=Auth::user();
+    $this->authorize("createTask", [ Task::class, $createReaquest]);
      $id=Auth::user()->id;
     $create=Task::create([
         "title"=> $createReaquest->title,
@@ -34,9 +34,7 @@ class TaskController extends Controller
         "status"=> $createReaquest->status,
         "user_id"=> $createReaquest->user_id,
     ]);
-   
     return $this->api_design(200,"task create succsefully",$create,null);
-   
 }
         // ====== index task   =====================
 
@@ -45,7 +43,6 @@ public function index()
     $this->authorize("view", Task::class);
     $Task=Task::get()->all();
         return $this->api_design(200,'All users',$Task,null);
-
 }
         // ====== show task   =====================
 
@@ -59,7 +56,7 @@ public function show(){
 
 public function update(UpdateReaquest $updateReaquest) 
 {
-    $this->authorize("update", Task::class);
+    $this->authorize("update",[ Task::class, $updateReaquest, Auth::class]);
 
     $update=Task::where('id',$updateReaquest->id)->first();
     $update->update([
@@ -76,7 +73,7 @@ public function update(UpdateReaquest $updateReaquest)
         // ====== Delete task=====================
 
 public function delete(Request $request){
-    $this->authorize("delete", Task::class);
+    $this->authorize("delete", [ Task::class, $request, Auth::class]);
     $task=Task::where('id',$request->id)->first();
     $task->delete();
     return $this->api_design(200,'user delete successfully',$task,null);

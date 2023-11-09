@@ -43,6 +43,7 @@ public function isEmployee()
 {
     return $this->role === 'EM';
 }
+
 // app/Models/User.php
 
 
